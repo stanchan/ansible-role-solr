@@ -4,7 +4,7 @@
   {%- if k == "replicationFactor" -%}
     {%- set _tmp = conf.__setitem__(k, v) -%}
   {%- elif k in [ "nrtReplicas", "tlogReplicas", "pullReplicas" ] -%}
-    {%- if not item.replicationFactor is defined -%}
+    {%- if item.replicationFactor is not defined -%}
       {%- set _tmp = conf.__setitem__(k, v) -%}
     {%- endif -%}
   {%- else  -%}
