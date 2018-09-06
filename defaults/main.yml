@@ -9,6 +9,14 @@ solr_required_packages:
   - python-setuptools
   - unzip
 
+apt_cache_valid_time: 600
+apt_recv_key_server: hkp://keyserver.ubuntu.com:80
+apt_recv_key: EEA14886
+apt_java_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
+install_java: "true"
+java_security_policies: []
+java_home: "/usr/lib/jvm/java-8-oracle"
+
 systemd_service_dir: /etc/systemd/system
 solr_service_name: solr
 solr_syslog_id: "{{ solr_service_name }}"
@@ -76,14 +84,6 @@ solr_override:
 
 solr_port: 8983
 
-apt_cache_valid_time: 600
-apt_recv_key_server: hkp://keyserver.ubuntu.com:80
-apt_recv_key: EEA14886
-apt_java_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
-install_java: "true"
-java_security_policies: []
-java_home: "/usr/lib/jvm/java-8-oracle"
-
 solr_jetty_threads_min: 10
 solr_jetty_threads_max: 10000
 solr_jetty_threads_idle_timeout: 120000
@@ -99,6 +99,8 @@ solr_jetty_header_cache_size: 512
 solr_jetty_delay_dispatch_until_content: 'false'
 solr_jetty_http_selectors: -1
 solr_jetty_http_acceptors: -1
+
+solr_check_wait_timeout: 300
 
 solr_jmx_enabled: no
 solr_jmx_port: 10082

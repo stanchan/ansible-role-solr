@@ -1,0 +1,14 @@
+---
+- name: "Wait for solr up"
+  uri:
+    url: "http://localhost:{{ solr_port }}/api/c"
+    status_code: 200
+    return_content: yes
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+    timeout: "{{ solr_check_wait_timeout | int }}"
+  register: result
+  until: result.status == 200 and result.json.responseHeader.status == 0
+  retries: 60
+  delay: 1
