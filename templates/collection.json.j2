@@ -1,0 +1,15 @@
+{%- set conf = { "config": item.configset } -%}
+{%- set _tmp = conf.__setitem__("name", item.id) -%}
+{%- for k, v in item.solrParams.iteritems() -%}
+  {%- if k == "replicationFactor" -%}
+    {%- set _tmp = conf.__setitem__(k, v) -%}
+  {%- elif k in [ "nrtReplicas", "tlogReplicas", "pullReplicas" ] -%}
+    {%- if not item.replicationFactor is defined -%}
+      {%- set _tmp = conf.__setitem__(k, v) -%}
+    {%- endif -%}
+  {%- else  -%}
+    {%- set _tmp = conf.__setitem__(k, v) -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set data = { "create": conf } -%}
+{{ data | to_nice_json(indent=2) }}

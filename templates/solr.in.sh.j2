@@ -1,0 +1,7 @@
+{{ ansible_managed | comment }}
+
+{% if solr_override is defined %}
+{% for k, v in solr_override.items() | sort %}
+{{ k }}={{ v }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,21 @@
+---
+- name: stop and disable solr service
+  systemd:
+    name: solr
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: remove solr binaries
+  file:
+    path: "{{ solr_home }}"
+    state: absent
+
+- name: remove jmx_exporter
+  file:
+    path: "{{ jmx_exporter_home }}"
+    state: absent
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes

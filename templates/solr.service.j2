@@ -1,0 +1,43 @@
+[Unit]
+Description=Solr
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory={{ solr_home }}
+User={{ solr_user }}
+Group={{ solr_group }}
+ExecStart={{ solr_bin_dir }}/solr start -c
+ExecReload={{ solr_bin_dir }}/solr restart
+ExecStop={{ solr_bin_dir }}/solr stop
+SyslogIdentifier={{ solr_syslog_id }}
+PIDFile={{ solr_pid_file }}
+# To use a specific JVM, specify the JAVA_HOME directory:
+Environment="JAVA_HOME={{ java_home }}"
+Environment="SOLR_HOME={{ solr_home }}"
+Environment="SOLRPIDFILE={{ solr_pid_file }}"
+Environment="SOLR_LOGS_DIR={{ solr_logs_dir }}"
+{% if solr_jmx_enabled %}
+Environment="JMXDISABLE=false"
+Environment="JMXPORT={{ solr_jmx_port }}"
+Environment="JMXLOCALONLY={{ solr_jmx_local_only }}
+Environment="JMXAUTH={{ solr_jmx_auth }}"
+Environment="JMXSSL={{ solr_jmx_ssl }}"
+Environment="JMXLOG4J={{ solr_jmx_log_disable }}"
+{% else %}
+Environment="JMXDISABLE=true"
+{% endif %}
+Environment="JVMFLAGS={{ solr_jvm_opts }}"
+LimitNOFILE={{ solr_open_files }}
+LimitNPROC={{ solr_nproc }}
+RemainAfterExit=no
+Restart=on-failure
+RestartSec=5s
+
+# Disable TimeoutStartSec, because the service does not signal completion
+TimeoutStartSec={{ solr_time_start_sec }}
+TimeoutStopSec={{ solr_time_stop_sec }}
+
+[Install]
+WantedBy=multi-user.target

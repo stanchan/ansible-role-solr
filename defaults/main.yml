@@ -1,0 +1,173 @@
+---
+# defaults file for solr
+ansible_host_ip_force_update: yes
+debian_easy_install_bin: /usr/bin/easy_install
+redhat_easy_install_bin: /bin/easy_install
+solr_clean: no
+solr_required_packages:
+  - python-dev
+  - python-setuptools
+  - unzip
+
+systemd_service_dir: /etc/systemd/system
+solr_service_name: solr
+solr_syslog_id: "{{ solr_service_name }}"
+solr_time_start_sec: 'infinity'
+solr_time_stop_sec: 30
+solr_pid_file: "/run/solr/solr-{{ solr_port }}.pid"
+
+solr_user: solr
+#solr_user_id: null
+solr_group: solr
+#solr_group_id: null
+solr_open_files: 65000
+solr_nproc: 65000
+
+solr_version: 7.4.0
+solr_package_file: "solr-{{ solr_version }}.tgz"
+solr_package_url: "http://apache.mirrors.lucidnetworks.net/lucene/solr/{{ solr_version }}/{{ solr_package_file }}"
+solr_validate_certs: yes
+solr_force_deploy: no
+solr_release_checksums:
+  solr-7.4.0.tgz: "sha256:a50eac8dece0acb5e6f0d868c7868ce8174e299752356f3424a15aa39bd64407"
+
+solr_install_dir: /opt/solr
+solr_home: /data/solr
+solr_release_root: "{{ solr_install_dir }}/releases"
+solr_server_root: "{{ solr_install_dir }}/server"
+solr_bin_dir: "{{ solr_install_dir }}/latest/bin"
+solr_zkcli: "{{ solr_install_dir }}/latest/server/scripts/cloud-scripts/zkcli.sh"
+solr_configset_template_dir: "{{ solr_install_dir }}/configsets"
+solr_collection_template_dir: "{{ solr_install_dir }}/collections"
+solr_collection_template: collection.json.j2
+solr_default_config: yes
+solr_data_dir: "{{ solr_home }}"
+solr_logs_dir: "/var/log/solr"
+solr_jvm_opts: "{% if solr_jmx_enabled %}-Dcom.sun.management.jmxremote.port={{ solr_jmx_port }} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false {% endif %}-javaagent:{{ jmx_exporter_home }}/{{ jmx_exporter_agent_jar }}={{ solr_jmx_exporter_port }}:{{ jmx_exporter_configs['solr']['file'] }}"
+solr_jvm_mem: "-Xmx768m"
+solr_jvm_stack: "-Xss768m"
+
+# list of inventory_hostname or list of dict of host + id... add an ip to override inventory lookup
+solr_hosts:
+  - host: "{{ inventory_hostname }}"
+    id: 1
+
+solr_collecitons: []
+solr_collection_create_timeout: 600
+
+solr_netif: ansible_eth0
+solr_zk_chroot: ""
+
+solr_env: {}
+
+solr_override:
+  ZK_HOST: "\"{% set comma = joiner(',') %}{% for host in zookeeper_hosts %}{{ comma() }}{{ hostvars[host.host]['ansible_host_ip'] }}:{{ zookeeper_client_port }}{% endfor %}/{{ solr_zk_chroot }}\""
+  SOLR_HOST: "\"{{ ansible_host_ip }}\""
+  SOLR_PID_DIR: "{{ solr_pid_file | dirname }}"
+  SOLR_DATA_HOME: "{{ solr_data_dir }}"
+  SOLR_PORT: "{{ solr_port }}"
+  SOLR_LOGS_DIR: "{{ solr_logs_dir }}"
+  ZK_CLIENT_TIMEOUT: "\"15000\""
+  SOLR_OPTS: "\"$SOLR_OPTS {{ solr_jvm_opts }}\""
+  SOLR_JAVA_STACK_SIZE: "\"{{ solr_jvm_stack }}\""
+  SOLR_JAVA_MEM: "\"{{ solr_jvm_mem }}\""
+  GC_TUNE: "\"-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=250 -XX:+AggressiveOpts -XX:InitiatingHeapOccupancyPercent=75\""
+  GC_LOG_OPTS: "\"-verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy -XX:+PrintReferenceGC\""
+
+solr_port: 8983
+
+apt_cache_valid_time: 600
+apt_recv_key_server: hkp://keyserver.ubuntu.com:80
+apt_recv_key: EEA14886
+apt_java_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
+install_java: "true"
+java_security_policies: []
+java_home: "/usr/lib/jvm/java-8-oracle"
+
+solr_jetty_threads_min: 10
+solr_jetty_threads_max: 10000
+solr_jetty_threads_idle_timeout: 120000
+solr_jetty_threads_stop_timeout: 60000
+solr_jetty_secure_port: 8443
+solr_jetty_output_buffer_size: 32768
+solr_jetty_output_aggregation_size: 8192
+solr_jetty_request_header_size: 8192
+solr_jetty_response_header_size: 8192
+solr_jetty_send_server_version: 'false'
+solr_jetty_send_date_header: 'false'
+solr_jetty_header_cache_size: 512
+solr_jetty_delay_dispatch_until_content: 'false'
+solr_jetty_http_selectors: -1
+solr_jetty_http_acceptors: -1
+
+solr_jmx_enabled: no
+solr_jmx_port: 10082
+solr_jmx_local_only: 'false'
+solr_jmx_auth: 'false'
+solr_jmx_ssl: 'false'
+solr_jmx_log_disable: 'true'
+
+solr_jmx_exporter_deploy: no
+solr_jmx_exporter_port: 9082
+jmx_exporter_version: 0.3.1
+jmx_exporter_agent_jar: "jmx_prometheus_javaagent-{{ jmx_exporter_version }}.jar"
+jmx_exporter_agent_jar_url: "http://central.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ jmx_exporter_version }}/{{ jmx_exporter_agent_jar }}"
+jmx_exporter_release_checksums:
+  jmx_prometheus_javaagent-0.3.1.jar: "sha1:ae9db209d5c3955bf4635bf91bde48869dfa5232"
+
+jmx_exporter_home: /opt/jmx_prometheus_agent
+jmx_exporter_release_root: "{{ jmx_exporter_home }}/releases"
+jmx_exporter_user: root
+jmx_exporter_group: root
+
+jmx_exporter_configs:
+  default:
+    file: "{{ jmx_exporter_home }}/config-default.yaml"
+    config:
+      startDelaySeconds: 0
+      ssl: false
+      lowercaseOutputName: true
+      lowercaseOutputLabelNames: true
+      whitelistObjectNames: "{{ jmx_exporter_whitelist }}"
+      blacklistObjectNames: []
+      rules: "{{ jmx_exporter_default_rules }}"
+  solr:
+    file: "{{ jmx_exporter_home }}/config-solr.yaml"
+    config:
+      startDelaySeconds: 0
+      ssl: false
+      lowercaseOutputName: true
+      lowercaseOutputLabelNames: true
+      whitelistObjectNames: "{{ jmx_exporter_solr_whitelist }}"
+      blacklistObjectNames: []
+      rules: "{{ jmx_exporter_solr_rules }}"
+
+jmx_exporter_default_rules:
+  - pattern: '.*'
+
+jmx_exporter_jvm_rules:
+  - pattern: 'java.lang.*'
+
+jmx_exporter_solr_rules:
+  - pattern: '^solr<dom1=core, dom2=(.+), dom3=(.+), dom4=(.+), category=(.+), scope=(.+), name=(.+)><>(.+):'
+    name: "solr_$6_$7"
+    labels:
+      collection: "$1"
+      shard: "$2"
+      replica: "$3"
+      category: "$4"
+      scope: "$5"
+      name: "$6"
+
+jmx_exporter_whitelist:
+  - "java.lang:type=GarbageCollector,name=*"
+  - "java.lang:type=Memory"
+  - "java.lang:type=OperatingSystem"
+  - "java.lang:type=Threading"
+
+jmx_exporter_solr_whitelist:
+  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=UPDATE,scope=/update,name=*"
+  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=QUERY,scope=/select,name=*"
+  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=UPDATE,scope=updateHandler,name=*"
+  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=CACHE,scope=searcher,name=*"
+  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=SEARCHER,scope=searcher,name=*"

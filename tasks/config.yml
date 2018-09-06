@@ -1,0 +1,88 @@
+---
+- name: Deploy solr config file
+  template:
+    src: solr.in.sh.j2
+    dest: "{{ solr_bin_dir }}/solr.in.sh"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+  notify:
+    - restart solr
+
+- name: Deploy jetty config file
+  template:
+    src: jetty.xml.j2
+    dest: "{{ solr_server_root }}/etc/jetty.xml"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+  notify:
+    - restart solr
+
+- name: Deploy jetty-http config file
+  template:
+    src: jetty-http.xml.j2
+    dest: "{{ solr_server_root }}/etc/jetty-http.xml"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+  notify:
+    - restart solr
+
+- name: Create configset solrcloud directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    recurse: yes
+  loop:
+    - "{{ solr_configset_template_dir }}/solrcloud"
+
+- name: Deploy solr.xml config file
+  template:
+    src: solrcloud.xml.j2
+    dest: "{{ solr_configset_template_dir }}/solrcloud/solr.xml"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+
+- block:
+  - name: Set solr node ip list
+    set_fact:
+      zookeeper_hosts_list: "{{ zookeeper_hosts_list|default([]) + [hostvars[item.host]['ansible_host_ip']] }}"
+      zookeeper_port_suffix: ":{{ zookeeper_client_port }}"
+    loop: "{{ zookeeper_hosts }}"
+
+  - name: Check znode for solr chroot
+    znode:
+      hosts: "{{ zookeeper_hosts_list | zip_longest([], fillvalue=zookeeper_port_suffix)| map('join') | join(',') }}"
+      name: "/{{ solr_zk_chroot }}"
+      op: get
+      timeout: 60
+    delegate_to: "{{ inventory_hostname }}"
+    register: znode_pre_check
+    become: no
+    ignore_errors: yes
+    run_once: yes
+
+  - name: Create znode for solr chroot
+    znode:
+      hosts: "{{ zookeeper_hosts_list | zip_longest([], fillvalue=zookeeper_port_suffix)| map('join') | join(',') }}"
+      name: "/{{ solr_zk_chroot }}"
+      state: present
+      timeout: 60
+    delegate_to: "{{ inventory_hostname }}"
+    register: znode_post_check
+    become: no
+    ignore_errors: yes
+    run_once: yes
+    when: znode_pre_check is failed
+
+  - name: Update solr.xml config for solrcloud in zookeeper
+    shell: "{{ solr_bin_dir }}/solr zk cp file:{{ solr_configset_template_dir }}/solrcloud/solr.xml zk:/solr.xml"
+    register: update_solr_xml
+    become: yes
+    become_user: "{{ solr_user }}"
+    ignore_errors: yes
+    run_once: yes
+    when: znode_pre_check is failed
+    notify:
+      - restart solr
+  when: solr_zk_chroot != ""

@@ -1,0 +1,74 @@
+---
+- name: Check solr deployed version
+  stat:
+    path: "{{ solr_install_dir }}/solr-{{ solr_version }}/dist/solr-core-{{ solr_version }}.jar"
+  register: solr_bin
+
+- name: Download solr package
+  get_url:
+    url: "{{ solr_package_url }}"
+    dest: "{{ solr_release_root }}/{{ solr_package_file }}"
+    mode: 0444
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    checksum: "{{ solr_release_checksums[solr_package_file] }}"
+    validate_certs: "{{ solr_validate_certs | default(omit) }}"
+    force: "{{ solr_force_download | default ('no') }}"
+
+- name: Deploy solr package
+  unarchive:
+    src: "{{ solr_release_root }}/{{ solr_package_file }}"
+    dest: "{{ solr_install_dir }}/solr-{{ solr_version }}"
+    remote_src: yes
+    keep_newer: yes
+    extra_opts: ['--strip-components=1']
+  when: (not solr_bin.stat.exists) or solr_force_deploy
+  notify: restart solr
+
+- name: Link solr default
+  file:
+    src: "{{ solr_install_dir }}/solr-{{ solr_version }}"
+    dest: "{{ solr_install_dir }}/latest"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    state: link
+
+- name: Link solr bin
+  file:
+    src: "{{ solr_install_dir }}/latest/bin"
+    dest: "{{ solr_install_dir }}/bin"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    state: link
+
+- name: Link solr dist
+  file:
+    src: "{{ solr_install_dir }}/latest/dist"
+    dest: "{{ solr_install_dir }}/dist"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    state: link
+
+- name: Link solr server
+  file:
+    src: "{{ solr_install_dir }}/latest/server"
+    dest: "{{ solr_install_dir }}/server"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    state: link
+
+- name: Link solr logs
+  file:
+    src: "{{ solr_logs_dir }}"
+    dest: "{{ solr_install_dir }}/logs"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    state: link
+
+- name: Change solr directory permissions and ownership
+  file:
+    path: "{{ solr_install_dir }}"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    mode: u=rwX,g=rX,o=rX
+    recurse: yes

@@ -1,0 +1,35 @@
+---
+- name: Create solr group
+  group:
+    name: "{{ solr_group }}"
+    gid: "{{ solr_group_id | default(omit) }}"
+    state: present
+
+- name: Create solr user
+  user:
+    name: "{{ solr_user }}"
+    uid: "{{ solr_user_id | default(omit) }}"
+    state: present
+    comment: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    home: "{{ solr_home }}"
+    create_home: no
+    system: no
+
+- name: Create solr directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    recurse: yes
+  loop:
+    - "{{ solr_home }}"
+    - "{{ solr_install_dir }}"
+    - "{{ solr_install_dir }}/solr-{{ solr_version }}"
+    - "{{ solr_release_root }}"
+    - "{{ solr_configset_template_dir }}"
+    - "{{ solr_collection_template_dir }}"
+    - "{{ solr_data_dir }}"
+    - "{{ solr_logs_dir }}"
+    - "{{ solr_pid_file | dirname }}"

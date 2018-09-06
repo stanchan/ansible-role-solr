@@ -1,0 +1,13 @@
+- name: Deploy solr role
+  hosts: all
+  vars:
+    zookeeper_hosts:
+      - host: solr.shift-labs.com
+        id: 1
+      - host: solr2.shift-labs.com
+        id: 2
+      - host: solr3.shift-labs.com
+        id: 3
+  roles:
+    - zookeeper
+    - solr

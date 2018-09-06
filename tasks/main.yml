@@ -1,0 +1,36 @@
+---
+# tasks file for solr
+
+- name: Cleanup solr
+  include_tasks: clean.yml
+  when: solr_clean
+
+- name: Set facts
+  include_tasks: set_facts.yml
+
+- name: Setup prereqs
+  include_tasks: prereqs.yml
+
+- name: Setup tuning settigs
+  include_tasks: tuning.yml
+
+- name: Setup java
+  include_tasks: java.yml
+
+- name: Setup setup
+  include_tasks: setup.yml
+
+- name: Install solr
+  include_tasks: install.yml
+
+- name: Setup solr
+  include_tasks: config.yml
+
+- name: Install jmx exporter
+  include_tasks: jmx_exporter.yml
+
+- name: Setup solr service
+  include_tasks: service.yml
+
+- name: Setup solr collections
+  include_tasks: collections.yml

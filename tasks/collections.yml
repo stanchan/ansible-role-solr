@@ -1,0 +1,114 @@
+---
+- block:
+  - name: Check _default configset for solrcloud
+    znode:
+      hosts: "{{ zookeeper_hosts_list | zip_longest([], fillvalue=zookeeper_port_suffix)| map('join') | join(',') }}"
+      name: "/{{ solr_zk_chroot }}/configs/_default"
+      op: get
+      timeout: 60
+    delegate_to: "{{ inventory_hostname }}"
+    register: default_configset_check
+    become: no
+    ignore_errors: yes
+    run_once: yes
+
+  - name: Upload _default configset for solrcloud
+    shell: "{{ solr_bin_dir }}/solr zk upconfig -n _default -d _default"
+    register: create_default_configset
+    become: yes
+    become_user: "{{ solr_user }}"
+    ignore_errors: yes
+    run_once: yes
+    when: default_configset_check is failed
+  when: solr_default_config
+
+- name: Deploy configset files
+  synchronize:
+    src: "configsets/{{ item.configset_files_dir }}/"
+    dest: "{{ solr_configset_template_dir }}/{{ item.configset }}/"
+    delete: yes
+    recursive: yes
+    rsync_opts: "{{ item.configset_templates | default(omit) | map('regex_replace','(.*)','--exclude=\\1') | list }}"
+  loop: "{{ solr_collections }}"
+
+- name: Change configset directory permissions and ownership
+  file:
+    path: "{{ solr_configset_template_dir }}"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    mode: u=rwX,g=rX,o=rX
+    recurse: yes
+
+- name: Deploy configset templates
+  template:
+    src: "configsets/{{ item.0.configset_template_dir }}/{{ item.1 }}.j2"
+    dest: "{{ solr_configset_template_dir }}/{{ item.0.configset }}/{{ item.1 }}"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+  loop: "{{ query('subelements', solr_collections , 'configset_templates', {'skip_missing': True}) }}"
+
+- name: Check configset uploaded
+  znode:
+    hosts: "{{ zookeeper_hosts_list | zip_longest([], fillvalue=zookeeper_port_suffix)| map('join') | join(',') }}"
+    name: "/{{ solr_zk_chroot }}/configs/{{ item.configset }}"
+    op: get
+    timeout: 60
+  delegate_to: "{{ inventory_hostname }}"
+  register: collection_configset_check
+  become: no
+  ignore_errors: yes
+  run_once: yes
+  loop: "{{ solr_collections }}"
+
+- name: Upload missing configset
+  shell: "{{ solr_bin_dir }}/solr zk upconfig -d {{ solr_configset_template_dir }}/{{ item.configset }} -n {{ item.id }}"
+  register: create_collection
+  become: yes
+  become_user: "{{ solr_user }}"
+  ignore_errors: yes
+  run_once: yes
+  #loop: "{{ collection_configset_check.results | selectattr('failed', 'equalto', True ) | map(attribute='item') | list }}"
+  loop: "{{ solr_collections }}"
+
+- name: Check collections created
+  uri:
+    url: "http://localhost:{{ solr_port }}/api/c/{{ item.id }}"
+    method: GET
+    status_code: 200,204
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+  run_once: yes
+  ignore_errors: yes
+  register: collection_results
+  loop: "{{ solr_collections | default([]) }}"
+
+- name: Deploy collection state files
+  template:
+    src: "{{ solr_collection_template }}"
+    dest: "{{ solr_collection_template_dir }}/{{ item.id }}.json"
+    owner: "{{ solr_user }}"
+    group: "{{ solr_group }}"
+    mode: 0640
+  register: "collections_state_files"
+  loop: "{{ solr_collections | default([]) }}"
+
+- name: Generate collection update
+  set_fact:
+    create_collections: "{{ collection_results.results | selectattr('failed', 'equalto', True ) | map(attribute='item') | list }}"
+    update_collections: "{{ collections_state_files.results | selectattr('changed', 'equalto', True ) | map(attribute='item') | list }}"
+
+- name: Create collections
+  uri:
+    url: "http://localhost:{{ solr_port }}/api/c"
+    method: POST
+    status_code: 200,204
+    return_content: yes
+    body: "{{ lookup('template', 'collection.json.j2') }}"
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+    timeout: "{{ solr_collection_create_timeout | int }}"
+  run_once: yes
+  register: collection_results
+  loop: "{{ create_collections | default([]) }}"
