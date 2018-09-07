@@ -12,3 +12,4 @@
   until: result.status == 200 and result.json.responseHeader.status == 0
   retries: "{{ solr_check_wait_retries }}"
   delay: "{{ solr_check_wait_delay }}"
+  run_once: yes
