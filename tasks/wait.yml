@@ -10,5 +10,5 @@
     timeout: "{{ solr_check_wait_timeout | int }}"
   register: result
   until: result.status == 200 and result.json.responseHeader.status == 0
-  retries: 60
-  delay: 1
+  retries: "{{ solr_check_wait_retries }}"
+  delay: "{{ solr_check_wait_delay }}"

@@ -76,6 +76,7 @@ solr_override:
   SOLR_PORT: "{{ solr_port }}"
   SOLR_LOGS_DIR: "{{ solr_logs_dir }}"
   ZK_CLIENT_TIMEOUT: "\"15000\""
+  SOLR_JAVA_HOME: "\"{{ java_home }}\""
   SOLR_OPTS: "\"$SOLR_OPTS {{ solr_jvm_opts }}\""
   SOLR_JAVA_STACK_SIZE: "\"{{ solr_jvm_stack }}\""
   SOLR_JAVA_MEM: "\"{{ solr_jvm_mem }}\""
@@ -101,6 +102,8 @@ solr_jetty_http_selectors: -1
 solr_jetty_http_acceptors: -1
 
 solr_check_wait_timeout: 300
+solr_check_wait_retries: 60
+solr_check_wait_delay: 5
 
 solr_jmx_enabled: no
 solr_jmx_port: 10082
