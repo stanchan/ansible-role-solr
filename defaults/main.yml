@@ -52,8 +52,9 @@ solr_default_config: yes
 solr_data_dir: "{{ solr_home }}"
 solr_logs_dir: "/var/log/solr"
 solr_jvm_opts: "{% if solr_jmx_enabled %}-Dcom.sun.management.jmxremote.port={{ solr_jmx_port }} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false {% endif %}-javaagent:{{ jmx_exporter_home }}/{{ jmx_exporter_agent_jar }}={{ solr_jmx_exporter_port }}:{{ jmx_exporter_configs['solr']['file'] }}"
-solr_jvm_mem: "-Xmx768m"
-solr_jvm_stack: "-Xss768m"
+solr_jvm_mem_max: "-Xmx768m"
+solr_jvm_mem_init: "-Xms768m"
+solr_jvm_stack: "-Xss256k"
 
 # list of inventory_hostname or list of dict of host + id... add an ip to override inventory lookup
 solr_hosts:
@@ -79,10 +80,9 @@ solr_override:
   SOLR_JAVA_HOME: "\"{{ java_home }}\""
   SOLR_OPTS: "\"$SOLR_OPTS {{ solr_jvm_opts }}\""
   SOLR_JAVA_STACK_SIZE: "\"{{ solr_jvm_stack }}\""
-  SOLR_JAVA_MEM: "\"{{ solr_jvm_mem }}\""
-  GC_TUNE: "\"-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=250 -XX:+AggressiveOpts -XX:InitiatingHeapOccupancyPercent=75\""
-  GC_LOG_OPTS: "\"-verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy -XX:+PrintReferenceGC\""
-
+  SOLR_JAVA_MEM: "\"{{ solr_jvm_mem_init }} {{ solr_jvm_mem_max }}\""
+  GC_TUNE: "\"-XX:+UseG1GC -XX:G1ReservePercent=15 -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=250 -XX:+AggressiveOpts -XX:InitiatingHeapOccupancyPercent=75\""
+  GC_LOG_OPTS: "\"-verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy -XX:+PrintReferenceGC -XX:+PrintGCApplicationStoppedTime -XX:+PrintSafepointStatistics -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath={{ solr_logs_dir }}/solr.hprof\""
 solr_port: 8983
 
 solr_jetty_threads_min: 10
