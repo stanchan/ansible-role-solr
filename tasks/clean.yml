@@ -6,10 +6,19 @@
     enabled: no
   ignore_errors: yes
 
-- name: remove solr binaries
+- name: "remove solr directory {{ item }}"
   file:
-    path: "{{ solr_home }}"
+    path: "{{ item }}"
     state: absent
+  loop:
+    - "{{ solr_home }}"
+    - "{{ solr_install_dir }}"
+    - "{{ solr_release_root }}"
+    - "{{ solr_configset_template_dir }}"
+    - "{{ solr_collection_template_dir }}"
+    - "{{ solr_data_dir }}"
+    - "{{ solr_logs_dir }}"
+    - "{{ solr_pid_file | dirname }}"
 
 - name: remove jmx_exporter
   file:
