@@ -11,7 +11,7 @@
 - name: Setup prereqs
   include_tasks: prereqs.yml
 
-- name: Setup tuning settigs
+- name: Setup tuning settings
   include_tasks: tuning.yml
 
 - name: Setup java

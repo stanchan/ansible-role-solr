@@ -75,6 +75,18 @@
     run_once: yes
     when: znode_pre_check is failed
 
+  - name: Check znode for solr.xml
+    znode:
+      hosts: "{{ zookeeper_hosts_list | zip_longest([], fillvalue=zookeeper_port_suffix)| map('join') | join(',') }}"
+      name: "/{{ solr_zk_chroot }}/solr.xml"
+      op: get
+      timeout: 60
+    delegate_to: "{{ inventory_hostname }}"
+    register: znode_solr_xml_check
+    become: no
+    ignore_errors: yes
+    run_once: yes
+
   - name: Update solr.xml config for solrcloud in zookeeper
     shell: "{{ solr_bin_dir }}/solr zk cp file:{{ solr_configset_template_dir }}/solrcloud/solr.xml zk:/solr.xml"
     register: update_solr_xml
@@ -82,7 +94,7 @@
     become_user: "{{ solr_user }}"
     ignore_errors: yes
     run_once: yes
-    when: znode_pre_check is failed
+    when: znode_solr_xml_check is failed
     notify:
       - restart solr
   when: solr_zk_chroot != ""
