@@ -33,7 +33,7 @@ solr_nproc: 65000
 
 solr_version: 7.4.0
 solr_package_file: "solr-{{ solr_version }}.tgz"
-solr_package_url: "http://apache.mirrors.lucidnetworks.net/lucene/solr/{{ solr_version }}/{{ solr_package_file }}"
+solr_package_url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/{{ solr_package_file }}"
 solr_validate_certs: yes
 solr_force_deploy: no
 solr_release_checksums:
