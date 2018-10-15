@@ -4,3 +4,7 @@
     ansible_host_ip: "{{ hostvars[inventory_hostname][solr_netif]['ipv4']['address'] }}"
     cacheable: true
   when: ansible_host_ip is not defined or ansible_host_ip_force_update
+
+- name: Set is_solr if in solr group
+  set_fact:
+    is_solr: "{{ inventory_hostname in groups[solr_group] | default([]) }}"

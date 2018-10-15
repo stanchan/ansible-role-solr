@@ -26,10 +26,7 @@
 - name: Setup solr
   include_tasks: config.yml
 
-- name: Install jmx exporter
-  include_tasks: jmx_exporter.yml
-
-- name: Setup solr service
+- name: Setup solr services
   include_tasks: service.yml
 
 - name: Setup solr collections

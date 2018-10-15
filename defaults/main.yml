@@ -1,8 +1,9 @@
 ---
 # defaults file for solr
 ansible_host_ip_force_update: yes
-debian_easy_install_bin: /usr/bin/easy_install
-redhat_easy_install_bin: /bin/easy_install
+is_service: no
+is_systemd: no
+solr_ansible_group: solr
 solr_clean: no
 solr_required_packages:
   - python-dev
@@ -51,7 +52,7 @@ solr_collection_template: collection.json.j2
 solr_default_config: yes
 solr_data_dir: "{{ solr_home }}"
 solr_logs_dir: "/var/log/solr"
-solr_jvm_opts: "{% if solr_jmx_enabled %}-Dcom.sun.management.jmxremote.port={{ solr_jmx_port }} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false {% endif %}-javaagent:{{ jmx_exporter_home }}/{{ jmx_exporter_agent_jar }}={{ solr_jmx_exporter_port }}:{{ jmx_exporter_configs['solr']['file'] }}"
+solr_jvm_opts: "{% if solr_jmx_enabled %}-Dcom.sun.management.jmxremote.port={{ solr_jmx_port }} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false {% endif %}"
 solr_jvm_mem_max: "-Xmx768m"
 solr_jvm_mem_init: "-Xms768m"
 solr_jvm_stack: "-Xss256k"
@@ -111,68 +112,3 @@ solr_jmx_local_only: 'false'
 solr_jmx_auth: 'false'
 solr_jmx_ssl: 'false'
 solr_jmx_log_disable: 'true'
-
-solr_jmx_exporter_deploy: no
-solr_jmx_exporter_port: 9082
-jmx_exporter_version: 0.3.1
-jmx_exporter_agent_jar: "jmx_prometheus_javaagent-{{ jmx_exporter_version }}.jar"
-jmx_exporter_agent_jar_url: "http://central.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ jmx_exporter_version }}/{{ jmx_exporter_agent_jar }}"
-jmx_exporter_release_checksums:
-  jmx_prometheus_javaagent-0.3.1.jar: "sha1:ae9db209d5c3955bf4635bf91bde48869dfa5232"
-
-jmx_exporter_home: /opt/jmx_prometheus_agent
-jmx_exporter_release_root: "{{ jmx_exporter_home }}/releases"
-jmx_exporter_user: root
-jmx_exporter_group: root
-
-jmx_exporter_configs:
-  default:
-    file: "{{ jmx_exporter_home }}/config-default.yaml"
-    config:
-      startDelaySeconds: 0
-      ssl: false
-      lowercaseOutputName: true
-      lowercaseOutputLabelNames: true
-      whitelistObjectNames: "{{ jmx_exporter_whitelist }}"
-      blacklistObjectNames: []
-      rules: "{{ jmx_exporter_default_rules }}"
-  solr:
-    file: "{{ jmx_exporter_home }}/config-solr.yaml"
-    config:
-      startDelaySeconds: 0
-      ssl: false
-      lowercaseOutputName: true
-      lowercaseOutputLabelNames: true
-      whitelistObjectNames: "{{ jmx_exporter_solr_whitelist }}"
-      blacklistObjectNames: []
-      rules: "{{ jmx_exporter_solr_rules }}"
-
-jmx_exporter_default_rules:
-  - pattern: '.*'
-
-jmx_exporter_jvm_rules:
-  - pattern: 'java.lang.*'
-
-jmx_exporter_solr_rules:
-  - pattern: '^solr<dom1=core, dom2=(.+), dom3=(.+), dom4=(.+), category=(.+), scope=(.+), name=(.+)><>(.+):'
-    name: "solr_$6_$7"
-    labels:
-      collection: "$1"
-      shard: "$2"
-      replica: "$3"
-      category: "$4"
-      scope: "$5"
-      name: "$6"
-
-jmx_exporter_whitelist:
-  - "java.lang:type=GarbageCollector,name=*"
-  - "java.lang:type=Memory"
-  - "java.lang:type=OperatingSystem"
-  - "java.lang:type=Threading"
-
-jmx_exporter_solr_whitelist:
-  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=UPDATE,scope=/update,name=*"
-  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=QUERY,scope=/select,name=*"
-  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=UPDATE,scope=updateHandler,name=*"
-  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=CACHE,scope=searcher,name=*"
-  - "solr:dom1=core,dom2=*,dom3=*,dom4=*,category=SEARCHER,scope=searcher,name=*"
