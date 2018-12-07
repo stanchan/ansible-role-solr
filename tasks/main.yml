@@ -26,5 +26,8 @@
 - name: Setup solr services
   include_tasks: service.yml
 
+- name: Wait for solr services
+  include_tasks: wait.yml
+
 - name: Setup solr collections
   include_tasks: collections.yml

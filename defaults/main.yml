@@ -1,8 +1,9 @@
 ---
 # defaults file for solr
 ansible_host_ip_force_update: yes
-is_service: no
-is_systemd: no
+systemd_service_dir: /etc/systemd/system
+java_install: yes
+
 solr_ansible_group: solr
 solr_clean: no
 solr_required_packages:
@@ -10,9 +11,6 @@ solr_required_packages:
   - python-setuptools
   - unzip
 
-java_home: "/usr/lib/jvm/java-8-oracle"
-
-systemd_service_dir: /etc/systemd/system
 solr_service_name: solr
 solr_syslog_id: "{{ solr_service_name }}"
 solr_time_start_sec: 'infinity'
@@ -46,6 +44,7 @@ solr_collection_template: collection.json.j2
 solr_default_config: yes
 solr_data_dir: "{{ solr_home }}"
 solr_logs_dir: "/var/log/solr"
+solr_agent_opts: -javaagent:{{ jmx_exporter_home }}/{{ jmx_exporter_agent_jar }}={{ solr_jmx_exporter_port }}:{{ jmx_exporter_configs['solr']['file'] }}"
 solr_jvm_opts: "{% if solr_jmx_enabled %}-Dcom.sun.management.jmxremote.port={{ solr_jmx_port }} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false {% endif %}"
 solr_jvm_mem_max: "-Xmx768m"
 solr_jvm_mem_init: "-Xms768m"

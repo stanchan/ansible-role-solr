@@ -7,4 +7,5 @@
 
 - name: Set is_solr if in solr group
   set_fact:
-    is_solr: "{{ inventory_hostname in groups[solr_group] | default([]) }}"
+    is_solr: "{{ inventory_hostname in groups[solr_group] | d([]) }}"
+    cacheable: yes
