@@ -1,35 +1,51 @@
 ---
 - name: Update soft open files
   pam_limits:
+    dest: "{{ item }}"
     domain: "{{ solr_user }}"
     limit_type: 'soft'
     limit_item: nofile
     value: "{{ solr_open_files }}"
     comment: Solr soft open files
+  loop:
+    - /etc/security/limits.conf
+    - /etc/security/limits.d/fusion.conf
 
 - name: Update hard open files
   pam_limits:
+    dest: "{{ item }}"
     domain: "{{ solr_user }}"
     limit_type: 'hard'
     limit_item: nofile
     value: "{{ solr_open_files }}"
     comment: Solr hard open files
+  loop:
+    - /etc/security/limits.conf
+    - /etc/security/limits.d/fusion.conf
 
 - name: Update soft max processes
   pam_limits:
+    dest: "{{ item }}"
     domain: "{{ solr_user }}"
     limit_type: 'soft'
     limit_item: nproc
     value: "{{ solr_nproc }}"
     comment: Solr soft max processes
+  loop:
+    - /etc/security/limits.conf
+    - /etc/security/limits.d/fusion.conf
 
 - name: Update hard max processes
   pam_limits:
+    dest: "{{ item }}"
     domain: "{{ solr_user }}"
     limit_type: 'hard'
     limit_item: nproc
     value: "{{ solr_nproc }}"
     comment: Solr hard max processes
+  loop:
+    - /etc/security/limits.conf
+    - /etc/security/limits.d/fusion.conf
 
 - name: Update vm.swappiness
   sysctl:
