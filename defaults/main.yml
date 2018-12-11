@@ -21,8 +21,8 @@ solr_user: solr
 #solr_user_id: null
 solr_group: solr
 #solr_group_id: null
-solr_open_files: 65000
-solr_nproc: 65000
+solr_open_files: 65356
+solr_nproc: 8192
 
 solr_version: 7.4.0
 solr_package_file: "solr-{{ solr_version }}.tgz"
