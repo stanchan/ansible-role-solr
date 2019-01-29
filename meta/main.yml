@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Stan Chan
-  description: Role to install, configure and manage Solr
+  description: Role to install, configure and manage SolrCloud Clusters
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
