@@ -2,13 +2,13 @@
 - name: Create solr group
   group:
     name: "{{ solr_group }}"
-    gid: "{{ solr_group_id | default(omit) }}"
+    gid: "{{ solr_group_id | d(omit) }}"
     state: present
 
 - name: Create solr user
   user:
     name: "{{ solr_user }}"
-    uid: "{{ solr_user_id | default(omit) }}"
+    uid: "{{ solr_user_id | d(omit) }}"
     state: present
     comment: "{{ solr_user }}"
     group: "{{ solr_group }}"

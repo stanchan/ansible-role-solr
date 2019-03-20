@@ -1,6 +1,6 @@
 {%- set conf = { "config": item.configset } -%}
 {%- set _tmp = conf.__setitem__("name", item.id) -%}
-{%- for k, v in item.solrParams.iteritems() -%}
+{%- for k, v in item.solrParams.items() -%}
   {%- if k == "replicationFactor" -%}
     {%- set _tmp = conf.__setitem__(k, v) -%}
   {%- elif k in [ "nrtReplicas", "tlogReplicas", "pullReplicas" ] -%}

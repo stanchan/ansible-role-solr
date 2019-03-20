@@ -12,8 +12,8 @@
     owner: "{{ solr_user }}"
     group: "{{ solr_group }}"
     checksum: "{{ solr_release_checksums[solr_package_file] }}"
-    validate_certs: "{{ solr_validate_certs | default(omit) }}"
-    force: "{{ solr_force_download | default ('no') }}"
+    validate_certs: "{{ solr_validate_certs | d(omit) }}"
+    force: "{{ solr_force_download | d('no') }}"
 
 - name: Deploy solr package
   unarchive:

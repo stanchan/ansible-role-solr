@@ -24,7 +24,7 @@ solr_group: solr
 solr_open_files: 65356
 solr_nproc: 65356
 
-solr_version: 7.7.1
+solr_version: 8.0.0
 solr_package_file: "solr-{{ solr_version }}.tgz"
 solr_package_url: "https://archive.apache.org/dist/lucene/solr/{{ solr_version }}/{{ solr_package_file }}"
 solr_validate_certs: yes
@@ -35,6 +35,7 @@ solr_release_checksums:
   solr-7.6.0.tgz: "sha256:2cb425a0b30ff153465d306803e514e53e41924d74f28d842cb3a07cace759d5"
   solr-7.7.0.tgz: "sha256:ad9eaa29449701fcabad497cc5f0506f8a8f76da714dc4a5429a549fcac24dc7"
   solr-7.7.1.tgz: "sha256:4fb85f12af045b28f6cb935b2f3739d59ec61ad1288ffe44c7ede64e614f28c4"
+  solr-8.0.0.tgz: "sha256:0e6392d3b980ab917c731b054101aafcebceacc0e5063cb1e305aeeaec911d12"
 
 solr_install_dir: /opt/solr
 solr_home: /data/solr

@@ -46,7 +46,7 @@
 - block:
   - name: Set solr node ip list
     set_fact:
-      zookeeper_hosts_list: "{{ zookeeper_hosts_list|default([]) + [hostvars[item.host]['ansible_host_ip']] }}"
+      zookeeper_hosts_list: "{{ zookeeper_hosts_list | d([]) + [hostvars[item.host]['ansible_host_ip']] }}"
       zookeeper_port_suffix: ":{{ zookeeper_client_port }}"
     loop: "{{ zookeeper_hosts }}"
 

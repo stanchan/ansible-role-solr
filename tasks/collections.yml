@@ -28,7 +28,7 @@
     dest: "{{ solr_configset_template_dir }}/{{ item.configset }}/"
     delete: yes
     recursive: yes
-    rsync_opts: "{{ item.configset_templates | default(omit) | map('regex_replace','(.*)','--exclude=\\1') | list }}"
+    rsync_opts: "{{ item.configset_templates | d(omit) | map('regex_replace','(.*)','--exclude=\\1') | list }}"
   loop: "{{ solr_collections }}"
 
 - name: Change configset directory permissions and ownership
@@ -81,7 +81,7 @@
   run_once: yes
   ignore_errors: yes
   register: collection_results
-  loop: "{{ solr_collections | default([]) }}"
+  loop: "{{ solr_collections | d([]) }}"
 
 - name: Deploy collection state files
   template:
@@ -91,7 +91,7 @@
     group: "{{ solr_group }}"
     mode: 0640
   register: "collections_state_files"
-  loop: "{{ solr_collections | default([]) }}"
+  loop: "{{ solr_collections | d([]) }}"
 
 - name: Generate collection update
   set_fact:
@@ -111,4 +111,4 @@
     timeout: "{{ solr_collection_create_timeout | int }}"
   run_once: yes
   register: collection_results
-  loop: "{{ create_collections | default([]) }}"
+  loop: "{{ create_collections | d([]) }}"
